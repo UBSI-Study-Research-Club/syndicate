@@ -22,7 +22,7 @@ export default function LiveChatFeed({ roomId }: LiveChatFeedProps) {
     const votes = messages.filter((m) => m.type === 'VOTE')
     const proposals = messages.filter((m) => m.type === 'PROPOSAL')
     const agrees = votes.filter((v) => v.content.includes('AGREE')).length
-    const disagrees = votes.filter((v) => v.content.includes('DISAGREE')).length
+    const disagrees = votes.filter((v) => v.content.includes('REJECT')).length
     
     return {
       hasProposal: proposals.length > 0,
@@ -30,7 +30,7 @@ export default function LiveChatFeed({ roomId }: LiveChatFeedProps) {
       agrees,
       disagrees,
       total: votes.length,
-      consensus: agrees > 0 && disagrees === 0 ? 'AGREE' : disagrees > 0 && agrees === 0 ? 'DISAGREE' : null,
+      consensus: agrees > 0 && disagrees === 0 ? 'AGREE' : disagrees > 0 && agrees === 0 ? 'REJECT' : null,
     }
   }, [messages])
 
@@ -139,7 +139,7 @@ export default function LiveChatFeed({ roomId }: LiveChatFeedProps) {
               {msg.type === 'VOTE' && (
                 <div className="flex gap-2 items-center">
                   <span className={`text-xs font-mono px-3 py-2 border rounded-none badge-pulse ${msg.content.includes('AGREE') ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-400' : 'border-red-500/60 bg-red-500/10 text-red-400'}`}>
-                    {msg.content.includes('AGREE') ? '✓ [VOTE: AGREE]' : '✗ [VOTE: DISAGREE]'}
+                    {msg.content.includes('AGREE') ? '✓ [VOTE: AGREE]' : '✗ [VOTE: REJECT]'}
                   </span>
                 </div>
               )}
