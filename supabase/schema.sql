@@ -18,6 +18,7 @@ CREATE TYPE msg_type AS ENUM ('CHAT', 'PROPOSAL', 'VOTE');
 CREATE TABLE rooms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   topic TEXT NOT NULL,
+  room_code TEXT UNIQUE CHECK (room_code ~ '^[A-Z]{3}-[0-9]{3}$'), -- join code, mis. PWK-515
   status room_status DEFAULT 'IDLE',
   max_rounds INT DEFAULT 5,
   current_round INT DEFAULT 1,
