@@ -19,6 +19,11 @@ interface ProposalModalProps {
 export function ProposalModal({ isOpen, onClose, proposal }: ProposalModalProps) {
   if (!proposal) return null;
 
+  const votePercent =
+    proposal.totalAgents > 0
+      ? Math.min(100, Math.max(0, (proposal.agreeVotes / proposal.totalAgents) * 100))
+      : 0;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="CONSENSUS PROPOSAL">
       <div className="space-y-4">
@@ -51,7 +56,7 @@ export function ProposalModal({ isOpen, onClose, proposal }: ProposalModalProps)
           <div
             className="h-full bg-cyan-400 transition-all"
             style={{
-              width: `${(proposal.agreeVotes / proposal.totalAgents) * 100}%`,
+              width: `${votePercent}%`,
             }}
           />
         </div>

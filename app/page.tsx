@@ -13,7 +13,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen flex flex-col">
+      <main className="min-h-screen flex flex-col cyber-grid">
         {/* Hero Section */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
           <div className="max-w-4xl w-full space-y-8">

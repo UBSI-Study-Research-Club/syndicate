@@ -42,23 +42,33 @@ export const useAgents = (roomId: string | null) => {
 
     fetchAgents()
 
-    // Subscribe to agent status updates
+    // Subscribe to agent changes (INSERT, UPDATE, DELETE)
     const channel = supabase
       .channel(`agents_${roomId}`)
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'room_agents',
           filter: `room_id=eq.${roomId}`,
         },
         (payload) => {
-          setAgents((prev) =>
-            prev.map((agent) =>
-              agent.id === payload.new.id ? (payload.new as Agent) : agent
+          if (payload.eventType === 'INSERT') {
+            const newAgent = payload.new as Agent
+            setAgents((prev) => {
+              if (prev.some((a) => a.id === newAgent.id)) return prev
+              return [...prev, newAgent]
+            })
+          } else if (payload.eventType === 'UPDATE') {
+            setAgents((prev) =>
+              prev.map((agent) =>
+                agent.id === payload.new.id ? (payload.new as Agent) : agent
+              )
             )
-          )
+          } else if (payload.eventType === 'DELETE') {
+            setAgents((prev) => prev.filter((agent) => agent.id !== payload.old.id))
+          }
         }
       )
       .subscribe()

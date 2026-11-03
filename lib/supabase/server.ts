@@ -6,6 +6,7 @@ export type RoomStatus = "IDLE" | "RUNNING" | "COMPLETED";
 export interface Room {
   id: string;
   topic: string;
+  room_code?: string | null;
   status: RoomStatus;
   max_rounds: number;
   current_round: number;

@@ -47,7 +47,10 @@ export const useMessages = (roomId: string | null) => {
         },
         (payload) => {
           const newMessage = payload.new as Message
-          setMessages((prev) => [...prev, newMessage])
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMessage.id)) return prev
+            return [...prev, newMessage]
+          })
         }
       )
       .subscribe()
