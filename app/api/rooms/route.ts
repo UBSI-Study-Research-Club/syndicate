@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomBytes } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 import { getServiceClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -10,10 +10,25 @@ interface AgentInput {
   persona: string;
 }
 
+const ROOM_CODE_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+/**
+ * Kode room format XXX-### (mis. PWK-515): 3 huruf + strip + 3 angka.
+ * Unik via UNIQUE constraint di DB; tabrakan ditangani retry di caller.
+ */
+function generateRoomCode(): string {
+  const letters = Array.from(
+    { length: 3 },
+    () => ROOM_CODE_ALPHABET[randomInt(0, 26)]
+  ).join("");
+  const digits = String(randomInt(0, 1000)).padStart(3, "0");
+  return `${letters}-${digits}`;
+}
+
 /**
  * POST /api/rooms — buat room (FR-01): topik, persona agen, max_rounds.
- * Menghasilkan Room ID + API Key `syn_live_<32 hex>` (FR-02).
- * API key hanya dikembalikan SEKALI di response ini.
+ * Menghasilkan Room ID + room_code `XXX-###` (mis. PWK-515) + API Key
+ * `syn_live_<32 hex>` (FR-02). API key hanya dikembalikan SEKALI di response ini.
  */
 export async function POST(req: NextRequest) {
   let body: {
@@ -47,13 +62,25 @@ export async function POST(req: NextRequest) {
   const api_key = `syn_live_${randomBytes(16).toString("hex")}`; // syn_live_ + 32 hex
   const supabase = getServiceClient();
 
-  // api_key disimpan terpisah (room_secrets, tanpa akses anon) —
-  // rooms terekspos ke anon via RLS read-only (NFR-02).
-  const { data: room, error: roomErr } = await supabase
-    .from("rooms")
-    .insert({ topic, max_rounds: maxRounds })
-    .select("id, topic, status, max_rounds, current_round, created_at")
-    .single();
+  // room_code: 3 huruf + 3 angka dipisah strip (mis. PWK-515). Generated di sini
+  // (trust boundary server-side). UNIQUE constraint nangkep tabrakan; retry max 5x.
+  let roomErr: { message: string } | null = null;
+  let room: Record<string, unknown> | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data, error } = await supabase
+      .from("rooms")
+      .insert({ topic, max_rounds: maxRounds, room_code: generateRoomCode() })
+      .select("id, room_code, topic, status, max_rounds, current_round, created_at")
+      .single();
+    if (!error) {
+      room = data;
+      roomErr = null;
+      break;
+    }
+    // 23505 = unique_violation: kode tabrakan, coba kode lain. Error lain = gagal beneran.
+    roomErr = error;
+    if (error.code !== "23505") break;
+  }
   if (roomErr || !room) {
     return NextResponse.json(
       { error: `Gagal membuat room: ${roomErr?.message}` },

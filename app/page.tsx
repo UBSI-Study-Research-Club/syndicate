@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { CreateRoomModal } from "@/components/CreateRoomModal";
+import { JoinRoomModal } from "@/components/JoinRoomModal";
 
 export default function Home() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   return (
     <>
@@ -42,8 +44,13 @@ export default function Home() {
               >
                 + CREATE WAR ROOM
               </Button>
-              <Button size="lg" variant="secondary" className="text-base">
-                VIEW DOCS
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={() => setShowJoinModal(true)}
+                className="text-base"
+              >
+                JOIN ROOM
               </Button>
             </div>
 
@@ -121,6 +128,10 @@ export default function Home() {
       <CreateRoomModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+      />
+      <JoinRoomModal
+        isOpen={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
       />
     </>
   );
