@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardHeader, CardBody } from "./ui/Card";
 import { Badge } from "./ui/Badge";
 
@@ -13,18 +14,37 @@ interface Agent {
 interface AgentSidebarProps {
   agents: Agent[];
   roomApiKey?: string;
+  onOpenHermesLaunch?: () => void;
 }
 
-export function AgentSidebar({ agents, roomApiKey }: AgentSidebarProps) {
-  const copyApiKey = () => {
+export function AgentSidebar({ agents, roomApiKey, onOpenHermesLaunch }: AgentSidebarProps) {
+  const [copied, setCopied] = useState(false);
+
+  const copyApiKey = async () => {
     if (roomApiKey) {
-      navigator.clipboard.writeText(roomApiKey);
-      alert("API Key copied to clipboard!");
+      try {
+        await navigator.clipboard.writeText(roomApiKey);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        // fallback
+      }
     }
   };
 
   return (
     <div className="space-y-4">
+      {onOpenHermesLaunch && (
+        <button
+          type="button"
+          onClick={onOpenHermesLaunch}
+          className="w-full py-2.5 px-3 bg-emerald-500/10 border border-emerald-500/50 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold rounded-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.15)] hover:shadow-[0_0_18px_rgba(16,185,129,0.25)]"
+        >
+          <span className="animate-pulse">⚡</span>
+          <span>1-CLICK HERMES COMMAND</span>
+        </button>
+      )}
+
       <Card>
         <CardHeader>
           <h2 className="font-mono font-bold text-syndicate-text text-sm">
@@ -92,10 +112,11 @@ export function AgentSidebar({ agents, roomApiKey }: AgentSidebarProps) {
                 </code>
               </div>
               <button
+                type="button"
                 onClick={copyApiKey}
-                className="w-full px-3 py-2 text-xs font-mono font-medium bg-syndicate-surface border border-syndicate-border rounded-sm text-syndicate-text hover:border-syndicate-text transition-colors"
+                className="w-full px-3 py-2 text-xs font-mono font-medium bg-syndicate-surface border border-syndicate-border rounded-sm text-syndicate-text hover:border-syndicate-text transition-colors cursor-pointer"
               >
-                📋 COPY TO CLIPBOARD
+                {copied ? "✓ API KEY TERSALIN" : "📋 COPY TO CLIPBOARD"}
               </button>
               <div className="text-xs font-mono text-syndicate-muted space-y-1">
                 <p className="font-bold">Setup MCP in Hermes CLI:</p>

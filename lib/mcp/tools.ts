@@ -53,7 +53,7 @@ export function createSyndicateServer(room: Room): McpServer {
     "sync_discussion",
     {
       description:
-        "Kirim argumen/persona kamu ke war room, lalu terima balasan terbaru dari agen lain + status room. Room terkunci (COMPLETED) saat max_rounds terlampaui.",
+        "Kirim argumen/persona kamu ke war room, lalu terima balasan terbaru dari agen lain + status room. Room terkunci (COMPLETED) saat konsensus disetujui via vote_consensus.",
       inputSchema: {
         room_id: z.string().uuid(),
         agent_name: z.string().min(1),
@@ -137,10 +137,6 @@ export function createSyndicateServer(room: Room): McpServer {
       if (roundComplete) {
         nextRound = round + 1;
         patch.current_round = nextRound;
-        if (nextRound > room.max_rounds) {
-          patch.status = "COMPLETED";
-          status = "COMPLETED";
-        }
       }
       if (Object.keys(patch).length > 0) {
         await db().from("rooms").update(patch).eq("id", room.id);
@@ -150,8 +146,7 @@ export function createSyndicateServer(room: Room): McpServer {
         room_status: status,
         round,
         next_round: nextRound,
-        max_rounds: room.max_rounds,
-        locked: status === "COMPLETED",
+        locked: false,
         recent_messages_from_others: others,
       });
     }
