@@ -13,7 +13,6 @@ interface CreateRoomModalProps {
 
 export function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProps) {
   const [topic, setTopic] = useState("");
-  const [maxRounds, setMaxRounds] = useState("5");
   const [agents, setAgents] = useState([
     { name: "", persona: "" },
   ]);
@@ -43,7 +42,6 @@ export function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topic,
-          max_rounds: parseInt(maxRounds),
           agents: agents.filter((a) => a.name && a.persona).map((a) => ({ agent_name: a.name, persona: a.persona })),
         }),
       });
@@ -71,16 +69,6 @@ export function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProps) {
           placeholder="e.g., Design System Architecture"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          required
-        />
-
-        <Input
-          label="MAX ROUNDS"
-          type="number"
-          min="1"
-          max="20"
-          value={maxRounds}
-          onChange={(e) => setMaxRounds(e.target.value)}
           required
         />
 

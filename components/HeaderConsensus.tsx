@@ -44,9 +44,7 @@ export function HeaderConsensus({
               </Badge>
             </div>
             <div className="flex items-center gap-4 text-xs font-mono text-syndicate-muted">
-              <span>
-                ROUND {currentRound} / {maxRounds}
-              </span>
+              <span>CONTINUOUS WAR ROOM</span>
               <span>•</span>
               <span>
                 AGENTS: {totalAgents}
